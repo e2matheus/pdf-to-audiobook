@@ -2,7 +2,7 @@
 
 Python program that converters given PDF file into an audiobook, using Google Text to Speech Source Code project.
 
-This project was inspired by Make Your PDF an AudioBook Using Python Programming by Rohit Kumar Thakur Geek Culture Medium.
+This project was inspired by Rohit Kumar Thakur's [Make Your PDF an AudioBook Using Python Programming](https://medium.com/geekculture/make-your-pdf-an-audiobook-using-python-programming-610b59cc4a92).
 
 ## How to run the program
 
@@ -18,4 +18,6 @@ In the project directory, you can run:
 
 `pip install tk`
 
-### `python main.py`
+### Start the main file
+
+`python main.py`
