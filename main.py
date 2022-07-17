@@ -8,23 +8,20 @@ from tkinter import filedialog
 from gtts import gTTS
 import PyPDF2
 
-def loadBar(currentIteration, iterationsTotal, prefix = '', suffix = '', decimals = 1, barLength = 20, fill = '>', isMinBarShown = True):
+def loadBar(currentIteration, iterationsTotal, prefix = '', suffix = '', decimals = 1, fill = '>', isMinBarShown = False, areIterationsShown = False):
   percent = ('{0:.' + str(decimals) + 'f}').format(100 * (currentIteration/float(iterationsTotal)))
   terminalSize = os.get_terminal_size()
   terminalWidth = terminalSize.columns
-  prefixLength = len(prefix)
-  suffixLength = len(suffix)
-  updatedBarLength = terminalWidth - prefixLength - suffixLength
+  charsBeforeBar = prefix + ' |'
+  progressChars = str(percent) + '%' if not areIterationsShown else str(currentIteration) + '/' + str(iterationsTotal)
+  charsAfterBar = f'| {progressChars} {suffix}'
+  barLength = 20 if isMinBarShown else terminalWidth - len(charsBeforeBar) - len(charsAfterBar) - 1
 
-  if (isMinBarShown):
-    updatedBarLength = barLength
+  charsToFill = int(barLength * currentIteration // iterationsTotal)
+  bar = fill * charsToFill + '-' * (barLength - charsToFill)
+  barChars = f'\r{charsBeforeBar}{bar}{charsAfterBar}'
 
-  charsToFill = int(updatedBarLength * currentIteration // iterationsTotal)
-  bar = fill * charsToFill + '-' * (updatedBarLength - charsToFill)
-  barChars = f'\r{prefix} |{bar}| {percent}% {suffix}'
-
-  print(barChars, end = '\r', flush = True)
-  print(barChars, end="", flush = True)
+  print(barChars, end = '\r')
 
   if currentIteration == iterationsTotal:
     print('\n')
@@ -48,15 +45,16 @@ with open(pdfLocation, 'rb') as book:
     reader = PyPDF2.PdfFileReader(book)
     pagesTotal = reader.numPages
     totalPagesToRead = pagesTotal - firstPageNumber + 1
-    barPrefix = 'Loading speech progress'
+    barPrefix = 'Loading speech'
     barSuffix = 'Complete'
+    shouldShowIterations = True
 
     print('\nPDF location: ' + pdfLocation)
     print('PDF name: ' + pdfName)
     print('Audio file name: ' + audioFileName)
     print('Total (pages): ' + str(totalPagesToRead) + ' of ' + str(pagesTotal) + '\n')
 
-    loadBar(0, pagesTotal, prefix = barPrefix, suffix = barSuffix)
+    loadBar(0, pagesTotal, prefix = barPrefix, suffix = barSuffix, areIterationsShown = shouldShowIterations)
 
     currentPageNumber = 0
     try:
@@ -65,13 +63,14 @@ with open(pdfLocation, 'rb') as book:
         pageContent = currentPage.extractText()
         pdfContent = str(pageContent)
         pageSpeech = gTTS(text = pdfContent)
+        pageSpeech = pdfContent
         speechSentences.append(pageSpeech)
         currentPageNumber += 1
 
         sleep(0.2)
-        loadBar(currentPageNumber, pagesTotal, prefix = barPrefix, suffix = barSuffix)
+        loadBar(currentPageNumber, pagesTotal, prefix = barPrefix, suffix = barSuffix, areIterationsShown = shouldShowIterations)
 
-      loadBar(pagesTotal, pagesTotal, prefix = barPrefix, suffix = barSuffix)
+      loadBar(pagesTotal, pagesTotal, prefix = barPrefix, suffix = barSuffix, areIterationsShown = shouldShowIterations)
 
     except Exception as error:
       print('\n\nERROR: Failed to read PDF page')
@@ -82,7 +81,7 @@ with open(pdfLocation, 'rb') as book:
     print(str(error) + '\n')
 
 sentencesTotal = len(speechSentences)
-barPrefix = 'Saving mp3 progress'
+barPrefix = 'Saving mp3'
 barSuffix = 'Complete'
 
 with open(audioFileName, 'wb') as fp:

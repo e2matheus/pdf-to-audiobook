@@ -8,8 +8,6 @@ This project was inspired by Rohit Kumar Thakur's [Make Your PDF an AudioBook Us
 
 ### Clone the project
 
-In the project directory, you can run:
-
 ### Install all dependencies
 
 `pip install gtts` (Google Text to Speech)
